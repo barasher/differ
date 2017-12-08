@@ -40,12 +40,12 @@ func TestCompareNonExistingTarget(t *testing.T) {
 	checkHasDiff(t, diffs, MISSING, "folderNonExistingInTo")
 }
 
-func TestCompareDifferentFile(t *testing.T) {
+func TestCompareSizeDifference(t *testing.T) {
 	diffs, err := compare("testdata/from", "different.txt", "testdata/to")
 	assert.Nil(t, err)
 	logDiffs(t, diffs)
 	assert.Equal(t, 1, len(diffs), "wrong length")
-	checkHasDiff(t, diffs, DIFFERENT, "different.txt")
+	checkHasDiff(t, diffs, SIZE_DIFFERENCE, "different.txt")
 }
 
 func TestCompareRecursive(t *testing.T) {
@@ -53,16 +53,27 @@ func TestCompareRecursive(t *testing.T) {
 	assert.Nil(t, err)
 	logDiffs(t, diffs)
 	assert.Equal(t, 2, len(diffs), "wrong length")
-	checkHasDiff(t, diffs, DIFFERENT, "folder/different.txt")
+	checkHasDiff(t, diffs, SIZE_DIFFERENCE, "folder/different.txt")
 	checkHasDiff(t, diffs, MISSING, "folder/nonExistingInTo.txt")
+}
+
+func TestCompareTypeDifference(t *testing.T) {
+	diffs, err := compare("testdata/from", "differentType", "testdata/to")
+	assert.Nil(t, err)
+	logDiffs(t, diffs)
+	assert.Equal(t, 1, len(diffs), "wrong length")
+	checkHasDiff(t, diffs, TYPE_DIFFERENCE, "differentType")
 }
 
 func TestDiff(t *testing.T) {
 	diffs, err := Diff("testdata/from", "testdata/to")
 	assert.Nil(t, err)
 	logDiffs(t, diffs)
-	checkHasDiff(t, diffs, DIFFERENT, "different.txt")
+	assert.Equal(t, 6, len(diffs), "wrong length")
+	checkHasDiff(t, diffs, SIZE_DIFFERENCE, "different.txt")
 	checkHasDiff(t, diffs, MISSING, "nonExistingInTo.txt")
-	checkHasDiff(t, diffs, DIFFERENT, "folder/different.txt")
+	checkHasDiff(t, diffs, TYPE_DIFFERENCE, "differentType")
+	checkHasDiff(t, diffs, MISSING, "folderNonExistingInTo")
+	checkHasDiff(t, diffs, SIZE_DIFFERENCE, "folder/different.txt")
 	checkHasDiff(t, diffs, MISSING, "folder/nonExistingInTo.txt")
 }

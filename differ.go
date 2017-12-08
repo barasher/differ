@@ -13,14 +13,17 @@ type DiffType int
 const (
 	// Missing element
 	MISSING DiffType = 1 + iota
+	// Size difference
+	SIZE_DIFFERENCE
 	// Element that differs
-	DIFFERENT
+	TYPE_DIFFERENCE
 )
 
 // diffTypeLabel provides a label for each DiffType
 var diffTypeLabel = map[DiffType]string {
 	MISSING : "M",
-	DIFFERENT : "D",
+	SIZE_DIFFERENCE : "S",
+	TYPE_DIFFERENCE : "T",
 }
 
 // A Difference represents a detected difference : the type of difference and the element that differs
@@ -73,11 +76,8 @@ func compare(fromRoot string, fromRelative string, toRoot string) ([]Difference,
 	if toInfo == nil { // non existing
 		return append(diffs, Difference{MISSING, fromRelative}), nil
 	}
-	if fromInfo.Size() != toInfo.Size() { // different
-		return append(diffs, Difference{DIFFERENT, fromRelative}), nil
-	}
 
-	if fromInfo.IsDir() { // recursive
+	if fromInfo.IsDir() && toInfo.IsDir() { // folders => recursive
 		subs, err := ioutil.ReadDir(fromAbs)
 		if err != nil {
 			return nil, fmt.Errorf("error while reading folder %v: %v", fromAbs, err)
@@ -90,6 +90,12 @@ func compare(fromRoot string, fromRelative string, toRoot string) ([]Difference,
 				diffs = append(diffs, subDiff...)
 			}
 		}
+	} else if !fromInfo.IsDir() && !toInfo.IsDir() { // files
+		if fromInfo.Size() != toInfo.Size() { // different size
+			return append(diffs, Difference{SIZE_DIFFERENCE, fromRelative}), nil
+		}
+	} else { // file & folder
+		return append(diffs, Difference{TYPE_DIFFERENCE, fromRelative}), nil
 	}
 
 	return diffs, nil
