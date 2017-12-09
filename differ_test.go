@@ -1,18 +1,18 @@
 package main
 
 import (
-	"testing"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestGetInfoExisting(t *testing.T) {
-	f, err := getInfo("testdata/")
+	_, f, err := getInfo("testdata/")
 	assert.Nil(t, err)
 	assert.NotNil(t, f)
 }
 
 func TestGetInfoNonExisting(t *testing.T) {
-	f, err := getInfo("nonExisting/")
+	_, f, err := getInfo("nonExisting/")
 	assert.Nil(t, err)
 	assert.Nil(t, f)
 }

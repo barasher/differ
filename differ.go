@@ -1,10 +1,9 @@
 package main
 
 import (
-	"io/ioutil"
 	"fmt"
-	"path/filepath"
 	"os"
+	"path/filepath"
 )
 
 // DiffType is a difference type
@@ -20,23 +19,28 @@ const (
 )
 
 // diffTypeLabel provides a label for each DiffType
-var diffTypeLabel = map[DiffType]string {
-	MISSING : "M",
-	SIZE_DIFFERENCE : "S",
-	TYPE_DIFFERENCE : "T",
+var diffTypeLabel = map[DiffType]string{
+	MISSING:         "M",
+	SIZE_DIFFERENCE: "S",
+	TYPE_DIFFERENCE: "T",
 }
 
 // A Difference represents a detected difference : the type of difference and the element that differs
 type Difference struct {
-	Type DiffType // Type of difference
-	Element string // Element that differs
+	Type    DiffType // Type of difference
+	Element string   // Element that differs
 }
 
 // Diff compares two folders (recursively) and returns what differs and any error encountered.
 func Diff(fromFolder string, toFolder string) ([]Difference, error) {
-	froms, err := ioutil.ReadDir(fromFolder)
+	from, err := os.Open(fromFolder)
 	if err != nil {
-		return nil, fmt.Errorf("error while reading folder %v: %v", fromFolder, err)
+		return nil, fmt.Errorf("error while opening %v: %v", fromFolder, err)
+	}
+
+	froms, err := from.Readdir(-1)
+	if err != nil {
+		return nil, fmt.Errorf("error while listing folder %v: %v", fromFolder, err)
 	}
 
 	var diffs []Difference
@@ -60,14 +64,15 @@ func compare(fromRoot string, fromRelative string, toRoot string) ([]Difference,
 	// from
 	fromAbs := filepath.Join(fromRoot, fromRelative)
 	var fromInfo os.FileInfo
-	if fromInfo, err = getInfo(fromAbs); err != nil {
+	var fromFile *os.File
+	if fromFile, fromInfo, err = getInfo(fromAbs); err != nil {
 		return nil, err
 	}
 
 	// to
 	toAbs := filepath.Join(toRoot, fromRelative)
 	var toInfo os.FileInfo
-	if toInfo, err = getInfo(toAbs); err != nil {
+	if _, toInfo, err = getInfo(toAbs); err != nil {
 		return nil, err
 	}
 
@@ -78,7 +83,7 @@ func compare(fromRoot string, fromRelative string, toRoot string) ([]Difference,
 	}
 
 	if fromInfo.IsDir() && toInfo.IsDir() { // folders => recursive
-		subs, err := ioutil.ReadDir(fromAbs)
+		subs, err := fromFile.Readdir(-1)
 		if err != nil {
 			return nil, fmt.Errorf("error while reading folder %v: %v", fromAbs, err)
 		}
@@ -103,18 +108,18 @@ func compare(fromRoot string, fromRelative string, toRoot string) ([]Difference,
 }
 
 // getInfo returns a file metadata (or nil if it does not exist) and any error if encountered
-func getInfo(file string) (os.FileInfo, error) {
+func getInfo(file string) (*os.File, os.FileInfo, error) {
 	f, err := os.Open(file)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, nil
+			return nil, nil, nil
 		} else {
-			return nil, fmt.Errorf("error while opening %v: %v", file, err)
+			return nil, nil, fmt.Errorf("error while opening %v: %v", file, err)
 		}
 	}
 	if finfo, err := f.Stat(); err != nil {
-		return nil, fmt.Errorf("error while getting stats for %v: %v", file, err)
+		return nil, nil, fmt.Errorf("error while getting stats for %v: %v", file, err)
 	} else {
-		return finfo, nil
+		return f, finfo, nil
 	}
 }
