@@ -5,18 +5,6 @@ import (
 	"testing"
 )
 
-func TestGetInfoExisting(t *testing.T) {
-	_, f, err := getInfo("testdata/")
-	assert.Nil(t, err)
-	assert.NotNil(t, f)
-}
-
-func TestGetInfoNonExisting(t *testing.T) {
-	_, f, err := getInfo("nonExisting/")
-	assert.Nil(t, err)
-	assert.Nil(t, f)
-}
-
 func checkHasDiff(t *testing.T, diffs []Difference, expDiffType DiffType, expElement string) {
 	for _, curDiff := range diffs {
 		if curDiff.Type == expDiffType && curDiff.Element == expElement {

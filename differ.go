@@ -37,6 +37,7 @@ func Diff(fromFolder string, toFolder string) ([]Difference, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error while opening %v: %v", fromFolder, err)
 	}
+	defer from.Close()
 
 	froms, err := from.Readdir(-1)
 	if err != nil {
@@ -60,26 +61,28 @@ func Diff(fromFolder string, toFolder string) ([]Difference, error) {
 // encountered.
 func compare(fromRoot string, fromRelative string, toRoot string) ([]Difference, error) {
 	var err error
+	var diffs []Difference
 
 	// from
 	fromAbs := filepath.Join(fromRoot, fromRelative)
-	var fromInfo os.FileInfo
 	var fromFile *os.File
-	if fromFile, fromInfo, err = getInfo(fromAbs); err != nil {
+	var fromInfo os.FileInfo
+	if fromFile, err = os.Open(fromAbs); err != nil {
+		return nil, err
+	}
+	defer fromFile.Close()
+	if fromInfo, err = fromFile.Stat(); err != nil {
 		return nil, err
 	}
 
 	// to
 	toAbs := filepath.Join(toRoot, fromRelative)
 	var toInfo os.FileInfo
-	if _, toInfo, err = getInfo(toAbs); err != nil {
+	if toInfo, err = os.Stat(toAbs); err != nil {
+		if os.IsNotExist(err) {
+			return append(diffs, Difference{MISSING, fromRelative}), nil
+		}
 		return nil, err
-	}
-
-	var diffs []Difference
-
-	if toInfo == nil { // non existing
-		return append(diffs, Difference{MISSING, fromRelative}), nil
 	}
 
 	if fromInfo.IsDir() && toInfo.IsDir() { // folders => recursive
@@ -108,18 +111,19 @@ func compare(fromRoot string, fromRelative string, toRoot string) ([]Difference,
 }
 
 // getInfo returns a file metadata (or nil if it does not exist) and any error if encountered
-func getInfo(file string) (*os.File, os.FileInfo, error) {
+/*func getInfo(file string) (os.FileInfo, error) {
 	f, err := os.Open(file)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, nil, nil
+			return nil, nil
 		} else {
-			return nil, nil, fmt.Errorf("error while opening %v: %v", file, err)
+			return nil, fmt.Errorf("error while opening %v: %v", file, err)
 		}
 	}
+	defer f.Close()
 	if finfo, err := f.Stat(); err != nil {
-		return nil, nil, fmt.Errorf("error while getting stats for %v: %v", file, err)
+		return nil, fmt.Errorf("error while getting stats for %v: %v", file, err)
 	} else {
-		return f, finfo, nil
+		return finfo, nil
 	}
-}
+}*/
