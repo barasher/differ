@@ -47,7 +47,7 @@ func Diff(fromFolder string, toFolder string) ([]Difference, error) {
 
 	var diffs []Difference
 	for _, from := range froms {
-		logrus.Infof("Comparing %v...", filepath.Join(fromFolder, from.Name()))
+		logrus.Infof("Checking %v...", from.Name())
 		subDiffs, err := compare(fromFolder, from.Name(), toFolder)
 		if err != nil {
 			return nil, err
