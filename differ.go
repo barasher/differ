@@ -111,21 +111,3 @@ func compare(fromRoot string, fromRelative string, toRoot string) ([]Difference,
 	return diffs, nil
 
 }
-
-// getInfo returns a file metadata (or nil if it does not exist) and any error if encountered
-/*func getInfo(file string) (os.FileInfo, error) {
-	f, err := os.Open(file)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, nil
-		} else {
-			return nil, fmt.Errorf("error while opening %v: %v", file, err)
-		}
-	}
-	defer f.Close()
-	if finfo, err := f.Stat(); err != nil {
-		return nil, fmt.Errorf("error while getting stats for %v: %v", file, err)
-	} else {
-		return finfo, nil
-	}
-}*/
