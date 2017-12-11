@@ -28,3 +28,23 @@ func TestUnmarshalConfigurationNominal(t *testing.T) {
 	checkHasBlacklistedPattern(t, c, "^.*txt$")
 	checkHasBlacklistedPattern(t, c, "^.*doc$")
 }
+
+func TestExecuteFailOnUnmarshalingConfiguration(t *testing.T) {
+	t.Skip()
+}
+
+func TestExecuteFailOnDifferCreation(t *testing.T) {
+	t.Skip()
+}
+
+func TestExecuteFailOnDifferExecution(t *testing.T) {
+	t.Skip()
+}
+
+func TestExecuteNominalWithoutDifference(t *testing.T) {
+	t.Skip()
+}
+
+func TestExecuteNominalWithoutDifferences(t *testing.T) {
+	t.Skip()
+}

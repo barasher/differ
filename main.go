@@ -36,37 +36,29 @@ func unmarshallConfiguration(confFile string) (*DifferConf, error) {
 	return &conf, nil
 }
 
-func main() {
-	confFile := flag.String("c", DEFAULT_CONFFILE, "configuration file")
-	flag.Parse()
+func execute(confFile string, from string, to string) int {
 	var err error
 
 	// configuration
 	conf := &DifferConf{}
-	if *confFile != DEFAULT_CONFFILE {
-		conf, err = unmarshallConfiguration(*confFile)
+	if confFile != DEFAULT_CONFFILE {
+		conf, err = unmarshallConfiguration(confFile)
 		if err != nil {
 			logrus.Errorf("%v", err)
-			os.Exit(CODE_CONF_ERROR)
+			return CODE_CONF_ERROR
 		}
-	}
-
-	// from & to
-	if len(flag.Args()) != ARG_COUNT {
-		logrus.Errorf("Wrong argument count, %v/%v provided", len(flag.Args()), ARG_COUNT)
-		os.Exit(CODE_CONF_ERROR)
 	}
 
 	// execution
 	differ, err := NewDiffer(*conf)
 	if err != nil {
 		logrus.Errorf("Error while creating a Differ: %v", err)
-		os.Exit(CODE_EXEC_ERROR)
+		return CODE_EXEC_ERROR
 	}
 	diffs, err := differ.Diff(flag.Arg(ARG_FROM), flag.Arg(ARG_TO))
 	if err != nil {
 		logrus.Errorf("%v", err)
-		os.Exit(CODE_EXEC_ERROR)
+		return CODE_EXEC_ERROR
 	}
 
 	// results
@@ -74,8 +66,22 @@ func main() {
 		for _, d := range diffs {
 			logrus.Warnf("[%v] %v", diffTypeLabel[d.Type], d.Element)
 		}
-		os.Exit(CODE_DIFF)
+		return CODE_DIFF
 	}
 
-	os.Exit(CODE_NO_DIFF)
+	return CODE_NO_DIFF
+}
+
+func main() {
+	confFile := flag.String("c", DEFAULT_CONFFILE, "configuration file")
+	flag.Parse()
+
+	// from & to check
+	if len(flag.Args()) != ARG_COUNT {
+		logrus.Errorf("Wrong argument count, %v/%v provided", len(flag.Args()), ARG_COUNT)
+		os.Exit(CODE_CONF_ERROR)
+	}
+
+	code := execute(*confFile, flag.Arg(ARG_FROM), flag.Arg(ARG_TO))
+	os.Exit(code)
 }
