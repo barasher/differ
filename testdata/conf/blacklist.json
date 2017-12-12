@@ -1,0 +1,6 @@
+{
+	"BlacklistedPatterns":[
+		"^.*txt$",
+		"^.*doc$"
+	]
+}
