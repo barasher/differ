@@ -12,19 +12,16 @@ import (
 type DiffType int
 
 const (
-	// Missing element
-	MISSING DiffType = 1 + iota
-	// Size difference
-	SIZE_DIFFERENCE
-	// Element that differs
-	TYPE_DIFFERENCE
+	missing DiffType = 1 + iota
+	sizeDifference
+	typeDifference
 )
 
 // diffTypeLabel provides a label for each DiffType
 var diffTypeLabel = map[DiffType]string{
-	MISSING:         "M",
-	SIZE_DIFFERENCE: "S",
-	TYPE_DIFFERENCE: "T",
+	missing:        "M",
+	sizeDifference: "S",
+	typeDifference: "T",
 }
 
 // Difference represents a detected difference : the type of difference and the element that differs
@@ -35,7 +32,7 @@ type Difference struct {
 
 // DifferConf represents the configuration for a Differ execution
 type DifferConf struct {
-	BlacklistPatterns []string
+	BlacklistedPatterns []string
 }
 
 // Differ is the "main" structure of Differ
@@ -48,7 +45,7 @@ func NewDiffer(conf DifferConf) (*Differ, error) {
 	d := Differ{}
 
 	// blacklisted patterns
-	for _, p := range conf.BlacklistPatterns {
+	for _, p := range conf.BlacklistedPatterns {
 		r, err := regexp.Compile(p)
 		if err != nil {
 			return nil, fmt.Errorf("error while compiling pattern %v: %v", p, err)
@@ -116,7 +113,7 @@ func (d *Differ) compare(fromRoot string, fromRelative string, toRoot string) ([
 	var toInfo os.FileInfo
 	if toInfo, err = os.Stat(toAbs); err != nil {
 		if os.IsNotExist(err) {
-			return append(diffs, Difference{MISSING, fromRelative}), nil
+			return append(diffs, Difference{missing, fromRelative}), nil
 		}
 		return nil, err
 	}
@@ -136,10 +133,10 @@ func (d *Differ) compare(fromRoot string, fromRelative string, toRoot string) ([
 		}
 	} else if !fromInfo.IsDir() && !toInfo.IsDir() { // files
 		if fromInfo.Size() != toInfo.Size() { // different size
-			return append(diffs, Difference{SIZE_DIFFERENCE, fromRelative}), nil
+			return append(diffs, Difference{sizeDifference, fromRelative}), nil
 		}
 	} else { // file & folder
-		return append(diffs, Difference{TYPE_DIFFERENCE, fromRelative}), nil
+		return append(diffs, Difference{typeDifference, fromRelative}), nil
 	}
 
 	return diffs, nil

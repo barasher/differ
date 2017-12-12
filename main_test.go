@@ -6,13 +6,13 @@ import (
 )
 
 func logConf(t *testing.T, c *DifferConf) {
-	for i, cur := range c.BlacklistPatterns {
+	for i, cur := range c.BlacklistedPatterns {
 		t.Logf("blacklist pattern %v: %v", i, cur)
 	}
 }
 
 func checkHasBlacklistedPattern(t *testing.T, c *DifferConf, p string) {
-	for _, cur := range c.BlacklistPatterns {
+	for _, cur := range c.BlacklistedPatterns {
 		if cur == p {
 			return
 		}
@@ -55,6 +55,8 @@ func TestExecuteFailOnUnmarshalingConfiguration(t *testing.T) {
 			"testdata/from", "testdata/to", codeDiff},
 		{"executeNominalWithoutDifference", "testdata/conf/blacklist.json",
 			"testdata/from", "testdata/from", codeNoDiff},
+		{"executeNominalWithoutConfiguration", defaultConfFile,
+			"testdata/from", "testdata/to", codeDiff},
 	}
 
 	for _, tc := range testCases {

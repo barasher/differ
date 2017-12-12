@@ -27,7 +27,7 @@ func TestCompareNonExistingTarget(t *testing.T) {
 	assert.Nil(t, err)
 	logDiffs(t, diffs)
 	assert.Equal(t, 1, len(diffs), "wrong length")
-	checkHasDiff(t, diffs, MISSING, "folderNonExistingInTo")
+	checkHasDiff(t, diffs, missing, "folderNonExistingInTo")
 }
 
 func TestCompareSizeDifference(t *testing.T) {
@@ -37,7 +37,7 @@ func TestCompareSizeDifference(t *testing.T) {
 	assert.Nil(t, err)
 	logDiffs(t, diffs)
 	assert.Equal(t, 1, len(diffs), "wrong length")
-	checkHasDiff(t, diffs, SIZE_DIFFERENCE, "different.txt")
+	checkHasDiff(t, diffs, sizeDifference, "different.txt")
 }
 
 func TestCompareRecursive(t *testing.T) {
@@ -47,8 +47,8 @@ func TestCompareRecursive(t *testing.T) {
 	assert.Nil(t, err)
 	logDiffs(t, diffs)
 	assert.Equal(t, 2, len(diffs), "wrong length")
-	checkHasDiff(t, diffs, SIZE_DIFFERENCE, "folder/different.txt")
-	checkHasDiff(t, diffs, MISSING, "folder/nonExistingInTo.txt")
+	checkHasDiff(t, diffs, sizeDifference, "folder/different.txt")
+	checkHasDiff(t, diffs, missing, "folder/nonExistingInTo.txt")
 }
 
 func TestCompareTypeDifference(t *testing.T) {
@@ -58,12 +58,12 @@ func TestCompareTypeDifference(t *testing.T) {
 	assert.Nil(t, err)
 	logDiffs(t, diffs)
 	assert.Equal(t, 1, len(diffs), "wrong length")
-	checkHasDiff(t, diffs, TYPE_DIFFERENCE, "differentType")
+	checkHasDiff(t, diffs, typeDifference, "differentType")
 }
 
 func TestCompareBlacklisted(t *testing.T) {
 	conf := DifferConf{
-		BlacklistPatterns: []string{"^.*\\.txt$"},
+		BlacklistedPatterns: []string{"^.*\\.txt$"},
 	}
 	differ, err := NewDiffer(conf)
 	assert.Nil(t, err)
@@ -80,17 +80,17 @@ func TestDiff(t *testing.T) {
 	assert.Nil(t, err)
 	logDiffs(t, diffs)
 	assert.Equal(t, 6, len(diffs), "wrong length")
-	checkHasDiff(t, diffs, SIZE_DIFFERENCE, "different.txt")
-	checkHasDiff(t, diffs, MISSING, "nonExistingInTo.txt")
-	checkHasDiff(t, diffs, TYPE_DIFFERENCE, "differentType")
-	checkHasDiff(t, diffs, MISSING, "folderNonExistingInTo")
-	checkHasDiff(t, diffs, SIZE_DIFFERENCE, "folder/different.txt")
-	checkHasDiff(t, diffs, MISSING, "folder/nonExistingInTo.txt")
+	checkHasDiff(t, diffs, sizeDifference, "different.txt")
+	checkHasDiff(t, diffs, missing, "nonExistingInTo.txt")
+	checkHasDiff(t, diffs, typeDifference, "differentType")
+	checkHasDiff(t, diffs, missing, "folderNonExistingInTo")
+	checkHasDiff(t, diffs, sizeDifference, "folder/different.txt")
+	checkHasDiff(t, diffs, missing, "folder/nonExistingInTo.txt")
 }
 
 func TestNewDifferFailOnRegexpCompile(t *testing.T) {
 	conf := DifferConf{}
-	conf.BlacklistPatterns = []string{"("}
+	conf.BlacklistedPatterns = []string{"("}
 	_, err := NewDiffer(conf)
 	assert.NotNil(t, err, "should have failed")
 }

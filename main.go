@@ -74,6 +74,7 @@ func execute(confFile string, from string, to string) int {
 
 // Main function
 func main() {
+	logrus.SetOutput(os.Stdout)
 	confFile := flag.String("c", defaultConfFile, "configuration file")
 	flag.Parse()
 	if len(flag.Args()) != argCount {
