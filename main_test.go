@@ -21,7 +21,7 @@ func checkHasBlacklistedPattern(t *testing.T, c *DifferConf, p string) {
 }
 
 func TestUnmarshalConfigurationNominal(t *testing.T) {
-	c, err := unmarshallConfiguration("testdata/conf/blacklist.json")
+	c, err := unmarshalConfiguration("testdata/conf/blacklist.json")
 	assert.Nil(t, err)
 	assert.NotNil(t, c)
 	logConf(t, c)
@@ -29,22 +29,39 @@ func TestUnmarshalConfigurationNominal(t *testing.T) {
 	checkHasBlacklistedPattern(t, c, "^.*doc$")
 }
 
+func TestUnmarshalFailOnUnmarshalingConfiguration(t *testing.T) {
+	c, err := unmarshalConfiguration("testdata/conf/unmarshalable.json")
+	assert.NotNil(t, err)
+	assert.Nil(t, c)
+}
+
 func TestExecuteFailOnUnmarshalingConfiguration(t *testing.T) {
-	t.Skip()
-}
+	var testCases = []struct {
+		testCaseId string
+		confFile   string
+		from       string
+		to         string
+		expReturn  int
+	}{
+		{"executeFailOnMarshalingConfiguration", "testdata/conf/unmarshalable.json",
+			"testdata/from", "testdata/to", codeConfError},
+		{"executeFailOnMarshalingConfiguration", "testdata/conf/nonExisting.json",
+			"testdata/from", "testdata/to", codeConfError},
+		{"executeFailOnDifferCreation", "testdata/conf/blacklistError.json",
+			"testdata/from", "testdata/to", codeExecError},
+		{"executeFailOnDifferExecution", "testdata/conf/blacklist.json",
+			"unknownFolder", "testdata/to", codeExecError},
+		{"executeNominalWithDifferences", "testdata/conf/blacklist.json",
+			"testdata/from", "testdata/to", codeDiff},
+		{"executeNominalWithoutDifference", "testdata/conf/blacklist.json",
+			"testdata/from", "testdata/from", codeNoDiff},
+	}
 
-func TestExecuteFailOnDifferCreation(t *testing.T) {
-	t.Skip()
-}
-
-func TestExecuteFailOnDifferExecution(t *testing.T) {
-	t.Skip()
-}
-
-func TestExecuteNominalWithoutDifference(t *testing.T) {
-	t.Skip()
-}
-
-func TestExecuteNominalWithoutDifferences(t *testing.T) {
-	t.Skip()
+	for _, tc := range testCases {
+		t.Run(tc.testCaseId, func(t *testing.T) {
+			code := execute(tc.confFile, tc.from, tc.to)
+			assert.Equalf(t, tc.expReturn, code, "wrong return code for %v, %v expected but got %v",
+				tc.testCaseId, tc.expReturn, code)
+		})
+	}
 }

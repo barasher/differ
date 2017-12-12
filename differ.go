@@ -143,5 +143,4 @@ func (d *Differ) compare(fromRoot string, fromRelative string, toRoot string) ([
 	}
 
 	return diffs, nil
-
 }
