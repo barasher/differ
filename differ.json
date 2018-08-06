@@ -1,0 +1,7 @@
+{
+	"BlacklistedPatterns":[
+		".*Thumbs\\.db$",
+		".*\\.picasa.ini$",
+		".*.DS_Store$"
+	]
+}
